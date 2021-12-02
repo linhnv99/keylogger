@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  db:
+    image: mysql:5.7
+    container_name: keylogger_db
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+      MYSQL_DATABASE: keylogger
+      MYSQL_USER: username
+      MYSQL_PASSWORD: password
+    ports:
+      - 3310:3306
+      - 33100:33060
+    restart: on-failure

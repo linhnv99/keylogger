@@ -1,20 +1,29 @@
-const ioHook = require("iohook");
-var cron = require("node-cron");
-const db = require("./db");
-const fileUtils = require("./fileUtils");
+const express = require("express");
+const routes = require("./src/routers");
+const { errorHandler } = require("./src/middlewares/errorHandler");
+const ApiError = require("./src/utils/ApiError");
 
-const filePath = "./log.txt";
+const app = express();
+const port = 8080;
 
-ioHook.on("keydown", (e) => {
-  let c = String.fromCharCode(e.rawcode);
-  fileUtils.writeFile(filePath, c);
+global.__rootDir = __dirname;
+//init route
+//apply context path
+// app.use("context-path", routes);
+app.use(routes);
+
+// parse json request body
+app.use(express.json());
+
+// parse urlencoded request body
+app.use(express.urlencoded({ extended: true }));
+
+// send back a 404 error for any unknown api request
+app.use((req, res, next) => {
+  next(new ApiError(404, "Not found"));
 });
 
-ioHook.start();
+// global error handler
+app.use(errorHandler);
 
-cron.schedule("0 30 6 * * *", async () => {
-  console.log("cron running...");
-  const data = await fileUtils.readFile(filePath);
-  await db.insert(data);
-  console.log("Done");
-});
+app.listen(port, () => console.log(`http://localhost:${port}`));
